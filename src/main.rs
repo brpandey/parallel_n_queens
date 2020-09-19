@@ -1,4 +1,12 @@
 // N-Queens
+
+// Usage: $ cargo run 10
+// Compiling parallel_n_queens v0.1.0 (.../parallel_n_queens)
+//     Finished dev [unoptimized + debuginfo] target(s) in 3.69s
+//     Running `target/debug/parallel_n_queens 10`
+//     N Queens 10X10 Parallel & Recursive: 976.113125ms
+
+
 // The n-queens puzzle is the problem of placing n queens on an n×n chessboard such that no two queens attack each other.
 // Given an integer n, return all distinct solutions to the n-queens puzzle.
 // Each solution contains a distinct board configuration of the n-queens' placement,
