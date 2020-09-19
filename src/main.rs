@@ -87,12 +87,7 @@ fn main() {
 // Parallel version which for NxN board puts N queens in N separate threads on the first row
 // and then recurses with the non parallel solver 
 fn solve_parallel(solutions_lock: Arc<Mutex<Vec<Vec<String>>>>, board: &mut Vec<Vec<u8>>, size: u32) {
-    // Attempt to successfully put Queen on every square in current row
-    // When valid spot found, attempt to recurse to place remaining queens
     for col in 0..size {
-        // One top-level thread for each spot on the row (for each column)
-        // Hence if NxN board we have N threads each doing their own recursive due diligence
-        // for a queen on the column spot
         let slock = Arc::clone(&solutions_lock);
         let b = &mut board.to_vec();
 
