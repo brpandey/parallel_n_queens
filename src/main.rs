@@ -47,14 +47,21 @@ use std::time::{Instant};
 const BOARD_SIZE: u32 = 4;
 
 fn main() {
-    // Collect arg
+    // Collect args
     let args: Vec<String> = env::args().collect();
-    let size = if args.len() > 1 {
-        args[1].parse::<u32>().unwrap_or(BOARD_SIZE)
-    } else {
-        BOARD_SIZE
+
+    let (size, display) = match args.len() {
+        n if n <= 1 || n > 3 => (BOARD_SIZE, false),
+        2 => (args[1].parse::<u32>().unwrap_or(BOARD_SIZE), false),
+        3 => (args[1].parse::<u32>().unwrap_or(BOARD_SIZE), args[2].parse::<bool>().unwrap_or(false)),
+        _ => panic!("Unreachable path"),
     };
 
+    setup(size, display);
+
+}
+
+fn setup(size: u32, display: bool) {
 /*
     // Note: Thought this would speed things up by predicted an accurate size but it looks like not
     let base: f32 = 2.54;         // an explicit type is required
@@ -64,7 +71,7 @@ fn main() {
 
     // Setup collections for solutions and candidate board
     // Apparently solutions doesn't need to be mutable thanks to the Mutex that we wrap it in! (interior mutability)
-    let solutions: Vec<Vec<String>> = Vec::with_capacity(size as usize);
+    let mut solutions: Vec<Vec<String>> = Vec::with_capacity(size as usize);
     let mut board = vec![vec!['.' as u8; size as usize]; size as usize];
 
     // Create shared lock
@@ -81,13 +88,13 @@ fn main() {
     thread_pool.install(|| solve_parallel(sl, &mut board, size));
 
     let duration = start.elapsed();
-/*
-    Don't need access to solutions vector right now
-    //Remove solutions value out of Arc and Mutex
-    let lock = Arc::try_unwrap(solutions_lock).expect("Unable to shed Arc wrapping as Arc still has multiple owners");
-    solutions = lock.into_inner().expect("Mutex lock can not be retrieved");
-    // println!("Solutions size: {}", solutions.len());
-*/
+
+    if display {
+        //Remove solutions value out of Arc and Mutex
+        let lock = Arc::try_unwrap(solutions_lock).expect("Unable to shed Arc wrapping as Arc still has multiple owners");
+        solutions = lock.into_inner().expect("Mutex lock can not be retrieved");
+        println!("{} Board Solutions", solutions.len());
+    }
 
     println!("N Queens {}X{} Parallel & Recursive: {:?}", size, size, duration);
 }
