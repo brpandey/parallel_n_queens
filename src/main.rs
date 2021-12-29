@@ -72,7 +72,7 @@ fn setup(size: u32, display: bool) {
     // Setup collections for solutions and candidate board
     // Apparently solutions doesn't need to be mutable thanks to the Mutex that we wrap it in! (interior mutability)
     let mut solutions: Vec<Vec<String>> = Vec::with_capacity(size as usize);
-    let mut board = vec![vec!['.' as u8; size as usize]; size as usize];
+    let mut board = vec![vec![b'.'; size as usize]; size as usize];
 
     // Create shared lock
     let solutions_lock: Arc<Mutex<Vec<Vec<String>>>> = Arc::new(Mutex::new(solutions));
@@ -108,7 +108,7 @@ fn solve_parallel(solutions_lock: Arc<Mutex<Vec<Vec<String>>>>, board: &mut Vec<
 
         rayon::scope(move |_| {
             // For each thread place queens on each column for row 0
-            b[0][col as usize] = 'Q' as u8;
+            b[0][col as usize] = b'Q';
             solve_helper(&slock, b, size, 1);
         });
     }
@@ -133,20 +133,20 @@ fn solve_helper(solutions_lock: &Arc<Mutex<Vec<Vec<String>>>>, board: &mut Vec<V
     // Attempt to successfully put Queen on every square in current row
     // When valid spot found, attempt to recurse to place remaining queens
     for col in 0..size {
-        if safe(&board, size as usize, row as usize, col as usize) {
+        if safe(board, size as usize, row as usize, col as usize) {
             // Set queen on current square since there are no threats
-            board[row as usize][col as usize] = 'Q' as u8;
+            board[row as usize][col as usize] = b'Q';
             // Attempt to place the remaining queens successfully through recursive calls
-            solve_helper(&solutions_lock, board, size, row + 1);
+            solve_helper(solutions_lock, board, size, row + 1);
             // Backtrack and undo the placement of the queen to
             // generate other solution combinations
-            board[row as usize][col as usize] = '.' as u8;
+            board[row as usize][col as usize] = b'.';
         }
     }
 }
 
 
-fn safe(board: &Vec<Vec<u8>>, size: usize, row: usize, column: usize) -> bool {
+fn safe(board: &[Vec<u8>], size: usize, row: usize, column: usize) -> bool {
     // Note: We don't need to be concerned with checking rows below us (greater than the current row)
 
     // Range iterators
@@ -157,11 +157,7 @@ fn safe(board: &Vec<Vec<u8>>, size: usize, row: usize, column: usize) -> bool {
 
     // Does queen exist at row and column location?
     let q = |r: usize, c: usize| {
-        if board[r][c] == 'Q' as u8 {
-            return true
-        } else {
-            return false
-        }
+        board[r][c] == b'Q'
     };
 
     // Cases
@@ -173,7 +169,7 @@ fn safe(board: &Vec<Vec<u8>>, size: usize, row: usize, column: usize) -> bool {
     for (r,c) in decr_rows.zip(decr_cols) { if q(r, c) { return false }; }; // 2a
     for (r,c) in dec_rows.zip(incr_cols) { if q(r, c) { return false }; }; // 2b
 
-    return true;
+    true
 }
 
 
